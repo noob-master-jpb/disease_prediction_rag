@@ -123,3 +123,5 @@ def predict_disease(user_input):
             return {"response_type": "error", "message": "Error decoding JSON response from the model.", "raw_response": response_text}
     except Exception as e:
         return {"response_type": "error", "message": f"An error occurred while calling the Gemini API: {e}"}
+res =predict_disease("I have a headache and feel dizzy.")
+print(res)
