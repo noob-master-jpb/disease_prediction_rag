@@ -16,7 +16,6 @@ embeddings_dataset_compress = os.getenv("embeddings_dataset_compress")
 embeddings_dataset = os.getenv("embeddings_dataset")
 
 
-
 print("project id:", project_id)
 print("dataset id:", dataset_id)
 print("table id:", table_id)
@@ -44,11 +43,12 @@ df['embedding'] = df['embedding'].apply(list)
 
 print("Connecting to BigQuery...")
 print("Creating BigQuery client...")
-print("Creating dataset...")
-print("Creating table...")
 client = bigquery.Client(project=project_id)
+print("Creating dataset...")
 dataset = bigquery.Dataset(f"{project_id}.{dataset_id}")
+print("Creating table...")
 client.create_dataset(dataset, exists_ok=True)
+
 
 print("Creating Schema...")
 schema = [
@@ -76,3 +76,4 @@ for i in range(0, len(df), chunk_size):
         project_id=project_id,
         if_exists="append" if i > 0 else "replace"
     )
+
