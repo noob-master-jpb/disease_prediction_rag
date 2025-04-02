@@ -1,9 +1,12 @@
 import os
+import subprocess
+subprocess.run(["pip", "install", "-r", "requirements.txt"], check=True)
+
 import pandas as pd
 from pandas_gbq import to_gbq
-import subprocess
 from google.cloud import bigquery
 from dotenv import load_dotenv
+
 
 
 load_dotenv()
