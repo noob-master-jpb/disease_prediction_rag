@@ -5,3 +5,6 @@ pandas
 numpy<=2.0
 pandas-gbq
 sentence-transformers
+Flask
+flask-cors
+python-dotenv
