@@ -1,13 +1,11 @@
 import os
 import subprocess
 subprocess.run(["pip", "install", "-r", "requirements.txt"], check=True)
-
+import numpy as np
 import pandas as pd
 from pandas_gbq import to_gbq
 from google.cloud import bigquery
 from dotenv import load_dotenv
-
-
 
 load_dotenv()
 project_id = os.getenv("project_id")
@@ -45,7 +43,6 @@ df = pd.DataFrame(pd.read_pickle(embeddings_dataset))
 df['embedding'] = df['embedding'].apply(list)
 
 print("Connecting to BigQuery...")
-print("Creating BigQuery client...")
 client = bigquery.Client(project=project_id)
 print("Creating dataset...")
 dataset = bigquery.Dataset(f"{project_id}.{dataset_id}")

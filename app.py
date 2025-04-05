@@ -1,10 +1,15 @@
-from flask import Flask, request, jsonify,session
+from flask import Flask, request, jsonify
+from flask_cors import CORS
 import os
 import json
 from vertexai.generative_models import GenerativeModel
 from google.cloud import bigquery
 from sentence_transformers import SentenceTransformer
 from dotenv import load_dotenv
+from functools import wraps
+
+app = Flask(__name__)
+CORS(app) 
 
 load_dotenv()
 project_id = os.getenv("project_id")
@@ -12,8 +17,25 @@ dataset_id = os.getenv("dataset_id")
 table_id = os.getenv("table_id")
 model = SentenceTransformer(os.getenv("model"))
 gemini_model = GenerativeModel(os.getenv("gemini_model"))
-
+port = os.getenv("port")
 client = bigquery.Client(project=project_id)
+
+# Load the Bearer Token from environment variables
+bearer_token = os.getenv("BEARER_TOKEN")
+
+def token_required(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        auth_header = request.headers.get("Authorization")
+        if not auth_header or not auth_header.startswith("Bearer "):
+            return jsonify({"error": "Authorization header missing or invalid"}), 401
+        
+        token = auth_header.split(" ")[1]
+        if token != bearer_token:
+            return jsonify({"error": "Invalid or missing token"}), 403
+        
+        return f(*args, **kwargs)
+    return decorated
 
 def generate_query_embedding(user_input):
     inputs = f"[CLS] {user_input}"
@@ -33,7 +55,6 @@ def retrieve_similar_cases(query_embedding, top_k=1000):
     
     results = client.query(query).result()
     return [dict(row) for row in results]
-
 def predict_disease(user_input):
     query_embedding = generate_query_embedding(user_input)
 
@@ -126,9 +147,9 @@ def predict_disease(user_input):
         return {"response_type": "error", "message": f"An error occurred while calling the Gemini API: {e}"}
 
 
-app = Flask(__name__)
 
 @app.route("/ai/text", methods=["POST"])
+@token_required
 def ai_text():
     try:
         text = request.json["prompt"]
@@ -136,5 +157,9 @@ def ai_text():
             return jsonify({"error": "No prompt provided"}), 400
         response = predict_disease(text)
         return jsonify(response), 200
-    except:
-        return 400
+    except Exception as e:
+        return jsonify({"error": str(e)}), 400
+    
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=int(port), debug=True)

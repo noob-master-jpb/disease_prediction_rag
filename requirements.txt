@@ -2,6 +2,6 @@ google-cloud-aiplatform
 google-cloud-storage
 google-cloud-bigquery
 pandas
-numpy
+numpy<=2.0
 pandas-gbq
 sentence-transformers
